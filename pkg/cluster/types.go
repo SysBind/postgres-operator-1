@@ -58,8 +58,10 @@ type ClusterStatus struct {
 	Cluster             string
 	MasterService       *v1.Service
 	ReplicaService      *v1.Service
+	HeadlessService     *v1.Service
 	MasterEndpoint      *v1.Endpoints
 	ReplicaEndpoint     *v1.Endpoints
+	HeadlessEndpoint    *v1.Endpoints
 	StatefulSet         *appsv1.StatefulSet
 	PodDisruptionBudget *policybeta1.PodDisruptionBudget
 

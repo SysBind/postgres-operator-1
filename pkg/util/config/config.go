@@ -210,6 +210,7 @@ type Config struct {
 	MajorVersionUpgradeMode                string            `name:"major_version_upgrade_mode" default:"off"`
 	MinimalMajorVersion                    string            `name:"minimal_major_version" default:"9.5"`
 	TargetMajorVersion                     string            `name:"target_major_version" default:"13"`
+	MeshGrid                               string            `name:"kubernetes_use_meshgrid" default:""`
 }
 
 // MustMarshal marshals the config or panics

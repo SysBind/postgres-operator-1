@@ -78,6 +78,8 @@ func (c *Cluster) endpointName(role PostgresRole) string {
 	name := c.Name
 	if role == Replica {
 		name = name + "-repl"
+	} else if role == Master {
+		name = name + "-master"
 	}
 
 	return name
@@ -87,6 +89,8 @@ func (c *Cluster) serviceName(role PostgresRole) string {
 	name := c.Name
 	if role == Replica {
 		name = name + "-repl"
+	} else if role == Master {
+		name = name + "-master"
 	}
 
 	return name
@@ -1631,12 +1635,18 @@ func (c *Cluster) shouldCreateLoadBalancerForService(role PostgresRole, spec *ac
 
 func (c *Cluster) generateService(role PostgresRole, spec *acidv1.PostgresSpec) *v1.Service {
 	serviceSpec := v1.ServiceSpec{
-		Ports: []v1.ServicePort{{Name: "postgresql", Port: 5432, TargetPort: intstr.IntOrString{IntVal: 5432}}},
-		Type:  v1.ServiceTypeClusterIP,
+		Ports: []v1.ServicePort{
+			{Name: "tcp-postgresql", Port: 5432, Protocol: "TCP"},
+			{Name: "http-patroni", Port: 8008, Protocol: "TCP"},
+			{Name: "http-operator", Port: 8765, Protocol: "TCP"},
+		},
+		Type: v1.ServiceTypeClusterIP,
 	}
 
-	if role == Replica || c.patroniKubernetesUseConfigMaps() {
+	if role != "Headless" {
 		serviceSpec.Selector = c.roleLabelsSet(false, role)
+	} else {
+		serviceSpec.ClusterIP = "None"
 	}
 
 	if c.shouldCreateLoadBalancerForService(role, spec) {
