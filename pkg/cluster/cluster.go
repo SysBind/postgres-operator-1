@@ -57,6 +57,7 @@ type Config struct {
 
 type kubeResources struct {
 	Services            map[PostgresRole]*v1.Service
+	HeadlessService     *v1.Service
 	Endpoints           map[PostgresRole]*v1.Endpoints
 	Secrets             map[types.UID]*v1.Secret
 	Statefulset         *appsv1.StatefulSet
@@ -269,6 +270,12 @@ func (c *Cluster) Create() error {
 		c.logger.Infof("%s service %q has been successfully created", role, util.NameFromMeta(service.ObjectMeta))
 		c.eventRecorder.Eventf(c.GetReference(), v1.EventTypeNormal, "Services", "The service %q for role %s has been successfully created", util.NameFromMeta(service.ObjectMeta), role)
 	}
+
+	service, err = c.createHeadlessService()
+	if err != nil {
+		return fmt.Errorf("could not create headless service: %v", err)
+	}
+	c.logger.Infof("headless service %q has been successfully created", util.NameFromMeta(service.ObjectMeta))
 
 	if err = c.initUsers(); err != nil {
 		return err

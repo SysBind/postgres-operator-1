@@ -275,6 +275,29 @@ func (c *Cluster) createService(role PostgresRole) (*v1.Service, error) {
 	return service, nil
 }
 
+func (c *Cluster) createHeadlessService() (*v1.Service, error) {
+	c.setProcessName("creating headless service")
+
+	serviceSpec := &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      c.statefulSetName(),
+			Namespace: c.Namespace,
+		},
+		Spec: v1.ServiceSpec{
+			Type:      v1.ServiceTypeClusterIP,
+			ClusterIP: "None",
+		},
+	}
+
+	service, err := c.KubeClient.Services(serviceSpec.Namespace).Create(context.TODO(), serviceSpec, metav1.CreateOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	c.HeadlessService = service
+	return service, nil
+}
+
 func (c *Cluster) updateService(role PostgresRole, newService *v1.Service) error {
 	var (
 		svc *v1.Service
