@@ -12,6 +12,7 @@ import (
 	policybeta1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/zalando/postgres-operator/pkg/util"
 	"github.com/zalando/postgres-operator/pkg/util/k8sutil"
@@ -286,6 +287,8 @@ func (c *Cluster) createHeadlessService() (*v1.Service, error) {
 		Spec: v1.ServiceSpec{
 			Type:      v1.ServiceTypeClusterIP,
 			ClusterIP: "None",
+			Ports:     []v1.ServicePort{{Name: "tcp-postgresql", Port: 5432, TargetPort: intstr.IntOrString{IntVal: 5432}}},
+			Selector:  c.labelsSet(false),
 		},
 	}
 
